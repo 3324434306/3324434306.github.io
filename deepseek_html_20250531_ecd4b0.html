@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>柏林噪声虚拟世界生成器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0ff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #a6c1ee, #fbc2eb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(100, 150, 255, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .world-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(20, 25, 60, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 50, 150, 0.3);
+            background: #0a0e2a;
+        }
+        
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .controls {
+            flex: 0 0 300px;
+            background: rgba(20, 25, 60, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #a6c1ee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2 i {
+            font-size: 1.2rem;
+        }
+        
+        .slider-container {
+            margin-bottom: 18px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .value {
+            color: #fbc2eb;
+            font-weight: 600;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(100, 150, 255, 0.2);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #a6c1ee;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(166, 193, 238, 0.5);
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #4a6fc7, #6a5af9);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(106, 90, 249, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(106, 90, 249, 0.5);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .biomes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .biome {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(50, 60, 120, 0.4);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .biome:hover {
+            background: rgba(70, 80, 160, 0.6);
+        }
+        
+        .biome-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(20, 25, 60, 0.6);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .info h2 {
+            margin-bottom: 15px;
+        }
+        
+        .info p {
+            line-height: 1.7;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #a6c1ee;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 30px;
+            border-top: 1px solid rgba(100, 150, 255, 0.3);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* 自定义面板 */
+        .custom-panel {
+            background: rgba(20, 25, 60, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 150, 255, 0.2);
+            margin-top: 30px;
+        }
+        
+        .custom-panel h2 {
+            margin-bottom: 20px;
+        }
+        
+        .custom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .custom-item {
+            background: rgba(50, 60, 120, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .custom-item h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #fbc2eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .color-picker input {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .color-picker span {
+            font-size: 0.9rem;
+        }
+        
+        .range-control {
+            margin-bottom: 10px;
+        }
+        
+        .range-control label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .range-control input {
+            width: 100%;
+        }
+        
+        .save-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .save-row input {
+            flex: 1;
+            background: rgba(30, 35, 70, 0.7);
+            border: 1px solid rgba(100, 150, 255, 0.3);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .save-row button {
+            background: linear-gradient(to right, #00c853, #64dd17);
+        }
+        
+        .presets {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .preset {
+            background: rgba(50, 60, 120, 0.4);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .preset:hover {
+            background: rgba(70, 80, 160, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex: 0 0 auto;
+            }
+            
+            .canvas-container {
+                height: 400px;
+            }
+            
+            .custom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>柏林噪声虚拟世界生成器</h1>
+            <p class="subtitle">使用柏林噪声算法生成无限多样的程序化世界。调整参数创建独特的地形、生物群落和生态系统。</p>
+        </header>
+        
+        <div class="content">
+            <div class="world-container">
+                <div class="canvas-container">
+                    <canvas id="worldCanvas"></canvas>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <h2><i class="fas fa-mountain"></i> 地形参数</h2>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>地形规模</span>
+                            <span class="value" id="scaleValue">0.04</span>
+                        </label>
+                        <input type="range" id="scale" min="0.01" max="0.1" step="0.005" value="0.04">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>地形细节</span>
+                            <span class="value" id="octavesValue">5</span>
+                        </label>
+                        <input type="range" id="octaves" min="1" max="8" step="1" value="5">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>地形粗糙度</span>
+                            <span class="value" id="persistenceValue">0.5</span>
+                        </label>
+                        <input type="range" id="persistence" min="0.1" max="1" step="0.05" value="0.5">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>
+                            <span>海洋水平面</span>
+                            <span class="value" id="seaLevelValue">0.3</span>
+                        </label>
+                        <input type="range" id="seaLevel" min="0.1" max="0.6" step="0.05" value="0.3">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2><i class="fas fa-tree"></i> 生物群落</h2>
+                    <div class="biomes">
+                        <div class="biome" data-biome="deepOcean">
+                            <div class="biome-color" style="background: #1a237e;"></div>
+                            <span>深海</span>
+                        </div>
+                        <div class="biome" data-biome="shallowOcean">
+                            <div class="biome-color" style="background: #1976d2;"></div>
+                            <span>浅海</span>
+                        </div>
+                        <div class="biome" data-biome="beach">
+                            <div class="biome-color" style="background: #ffd54f;"></div>
+                            <span>沙滩</span>
+                        </div>
+                        <div class="biome" data-biome="grassland">
+                            <div class="biome-color" style="background: #388e3c;"></div>
+                            <span>草原</span>
+                        </div>
+                        <div class="biome" data-biome="forest">
+                            <div class="biome-color" style="background: #2e7d32;"></div>
+                            <span>森林</span>
+                        </div>
+                        <div class="biome" data-biome="mountains">
+                            <div class="biome-color" style="background: #795548;"></div>
+                            <span>山地</span>
+                        </div>
+                        <div class="biome" data-biome="highMountains">
+                            <div class="biome-color" style="background: #bdbdbd;"></div>
+                            <span>高山</span>
+                        </div>
+                        <div class="biome" data-biome="snowPeaks">
+                            <div class="biome-color" style="background: #f5f5f5;"></div>
+                            <span>雪峰</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2><i class="fas fa-globe"></i> 世界控制</h2>
+                    <div class="buttons">
+                        <button id="generateBtn"><i class="fas fa-sync-alt"></i> 生成新世界</button>
+                        <button id="animateBtn"><i class="fas fa-play"></i> 动画地形</button>
+                        <button id="zoomInBtn"><i class="fas fa-search-plus"></i> 放大</button>
+                        <button id="zoomOutBtn"><i class="fas fa-search-minus"></i> 缩小</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="custom-panel">
+            <h2><i class="fas fa-sliders-h"></i> 自定义设置</h2>
+            <div class="custom-grid">
+                <div class="custom-item">
+                    <h3><i class="fas fa-palette"></i> 生物群落颜色</h3>
+                    <div class="color-picker">
+                        <input type="color" id="deepOceanColor" value="#1a237e">
+                        <span>深海</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="shallowOceanColor" value="#1976d2">
+                        <span>浅海</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="beachColor" value="#ffd54f">
+                        <span>沙滩</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="grasslandColor" value="#388e3c">
+                        <span>草原</span>
+                    </div>
+                </div>
+                
+                <div class="custom-item">
+                    <h3><i class="fas fa-palette"></i> 生物群落颜色</h3>
+                    <div class="color-picker">
+                        <input type="color" id="forestColor" value="#2e7d32">
+                        <span>森林</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="mountainsColor" value="#795548">
+                        <span>山地</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="highMountainsColor" value="#bdbdbd">
+                        <span>高山</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="snowPeaksColor" value="#f5f5f5">
+                        <span>雪峰</span>
+                    </div>
+                </div>
+                
+                <div class="custom-item">
+                    <h3><i class="fas fa-layer-group"></i> 生物群落范围</h3>
+                    <div class="range-control">
+                        <label>深海阈值: <span id="deepOceanThresholdValue">0.15</span></label>
+                        <input type="range" id="deepOceanThreshold" min="0.05" max="0.3" step="0.01" value="0.15">
+                    </div>
+                    <div class="range-control">
+                        <label>浅海阈值: <span id="shallowOceanThresholdValue">0.3</span></label>
+                        <input type="range" id="shallowOceanThreshold" min="0.2" max="0.4" step="0.01" value="0.3">
+                    </div>
+                    <div class="range-control">
+                        <label>沙滩阈值: <span id="beachThresholdValue">0.35</span></label>
+                        <input type="range" id="beachThreshold" min="0.3" max="0.4" step="0.01" value="0.35">
+                    </div>
+                </div>
+                
+                <div class="custom-item">
+                    <h3><i class="fas fa-layer-group"></i> 生物群落范围</h3>
+                    <div class="range-control">
+                        <label>草原阈值: <span id="grasslandThresholdValue">0.45</span></label>
+                        <input type="range" id="grasslandThreshold" min="0.35" max="0.55" step="0.01" value="0.45">
+                    </div>
+                    <div class="range-control">
+                        <label>森林阈值: <span id="forestThresholdValue">0.55</span></label>
+                        <input type="range" id="forestThreshold" min="0.45" max="0.65" step="0.01" value="0.55">
+                    </div>
+                    <div class="range-control">
+                        <label>山地阈值: <span id="mountainsThresholdValue">0.7</span></label>
+                        <input type="range" id="mountainsThreshold" min="0.6" max="0.8" step="0.01" value="0.7">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="save-row">
+                <input type="text" id="worldName" placeholder="输入世界名称...">
+                <button id="saveConfigBtn"><i class="fas fa-save"></i> 保存配置</button>
+            </div>
+            
+            <div class="presets">
+                <div class="preset" data-preset="earth">地球</div>
+                <div class="preset" data-preset="desert">沙漠世界</div>
+                <div class="preset" data-preset="ice">冰封星球</div>
+                <div class="preset" data-preset="jungle">丛林星球</div>
+                <div class="preset" data-preset="volcanic">火山世界</div>
+            </div>
+        </div>
+        
+        <div class="info">
+            <h2><i class="fas fa-info-circle"></i> 关于柏林噪声</h2>
+            <p>柏林噪声是由Ken Perlin开发的一种梯度噪声函数，广泛用于计算机图形学生成自然外观的纹理、地形和其他有机模式。</p>
+            <p>与普通随机噪声不同，柏林噪声具有平滑过渡的特性，使其非常适合创建山脉、云层、海洋波浪等自然现象。</p>
+            <p>本生成器使用多层（八度）柏林噪声叠加，通过调整频率、振幅和持久性参数，创建复杂而自然的地形特征。</p>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="worldSize">256k</div>
+                    <div class="stat-label">像素世界</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">可能世界</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="generationTime">0.2s</div>
+                    <div class="stat-label">生成时间</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>柏林噪声虚拟世界生成器 | 使用HTML5 Canvas和JavaScript实现</p>
+            <p>© 2023 程序化世界生成器 | 探索无限可能</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('worldCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            generateWorld();
+        }
+        
+        // 初始化变量
+        let worldSeed = Math.floor(Math.random() * 1000000);
+        let scale = 0.04;
+        let octaves = 5;
+        let persistence = 0.5;
+        let seaLevel = 0.3;
+        let offsetX = 0;
+        let offsetY = 0;
+        let zoom = 1.0;
+        let isAnimating = false;
+        let animationStart = 0;
+        
+        // 生物群落颜色配置
+        let biomeColors = {
+            deepOcean: "#1a237e",
+            shallowOcean: "#1976d2",
+            beach: "#ffd54f",
+            grassland: "#388e3c",
+            forest: "#2e7d32",
+            mountains: "#795548",
+            highMountains: "#bdbdbd",
+            snowPeaks: "#f5f5f5"
+        };
+        
+        // 生物群落阈值
+        let biomeThresholds = {
+            deepOcean: 0.15,
+            shallowOcean: 0.3,
+            beach: 0.35,
+            grassland: 0.45,
+            forest: 0.55,
+            mountains: 0.7,
+            highMountains: 0.8,
+            snowPeaks: 0.9
+        };
+        
+        // 初始化
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            setupEventListeners();
+            updateBiomeColors();
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 滑块事件
+            document.getElementById('scale').addEventListener('input', function() {
+                scale = parseFloat(this.value);
+                document.getElementById('scaleValue').textContent = scale.toFixed(3);
+                generateWorld();
+            });
+            
+            document.getElementById('octaves').addEventListener('input', function() {
+                octaves = parseInt(this.value);
+                document.getElementById('octavesValue').textContent = octaves;
+                generateWorld();
+            });
+            
+            document.getElementById('persistence').addEventListener('input', function() {
+                persistence = parseFloat(this.value);
+                document.getElementById('persistenceValue').textContent = persistence.toFixed(2);
+                generateWorld();
+            });
+            
+            document.getElementById('seaLevel').addEventListener('input', function() {
+                seaLevel = parseFloat(this.value);
+                document.getElementById('seaLevelValue').textContent = seaLevel.toFixed(2);
+                generateWorld();
+            });
+            
+            // 按钮事件
+            document.getElementById('generateBtn').addEventListener('click', function() {
+                worldSeed = Math.floor(Math.random() * 1000000);
+                generateWorld();
+            });
+            
+            document.getElementById('animateBtn').addEventListener('click', function() {
+                isAnimating = !isAnimating;
+                if (isAnimating) {
+                    animationStart = Date.now();
+                    animateWorld();
+                    this.innerHTML = '<i class="fas fa-stop"></i> 停止动画';
+                } else {
+                    this.innerHTML = '<i class="fas fa-play"></i> 动画地形';
+                }
+            });
+            
+            document.getElementById('zoomInBtn').addEventListener('click', function() {
+                zoom *= 1.2;
+                generateWorld();
+            });
+            
+            document.getElementById('zoomOutBtn').addEventListener('click', function() {
+                zoom /= 1.2;
+                generateWorld();
+            });
+            
+            // Canvas拖动事件
+            let isDragging = false;
+            let lastX, lastY;
+            
+            canvas.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                lastX = e.clientX;
+                lastY = e.clientY;
+            });
+            
+            canvas.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    offsetX += (e.clientX - lastX) / zoom;
+                    offsetY += (e.clientY - lastY) / zoom;
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    generateWorld();
+                }
+            });
+            
+            canvas.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+            
+            canvas.addEventListener('mouseleave', function() {
+                isDragging = false;
+            });
+            
+            // 生物群落颜色选择器
+            document.querySelectorAll('input[type="color"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    updateBiomeColors();
+                    generateWorld();
+                });
+            });
+            
+            // 生物群落阈值滑块
+            document.querySelectorAll('.range-control input[type="range"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    const id = this.id.replace('Color', '').replace('Threshold', '');
+                    const value = parseFloat(this.value);
+                    biomeThresholds[id] = value;
+                    
+                    // 更新显示的值
+                    document.getElementById(`${id}ThresholdValue`).textContent = value.toFixed(2);
+                    
+                    generateWorld();
+                });
+            });
+            
+            // 保存配置按钮
+            document.getElementById('saveConfigBtn').addEventListener('click', function() {
+                const worldName = document.getElementById('worldName').value || `世界_${Math.floor(Math.random() * 1000)}`;
+                alert(`配置 "${worldName}" 已保存！`);
+            });
+            
+            // 预设按钮
+            document.querySelectorAll('.preset').forEach(preset => {
+                preset.addEventListener('click', function() {
+                    const type = this.dataset.preset;
+                    applyPreset(type);
+                });
+            });
+        }
+        
+        // 应用预设
+        function applyPreset(type) {
+            switch(type) {
+                case 'earth':
+                    // 地球预设
+                    scale = 0.04;
+                    octaves = 5;
+                    persistence = 0.5;
+                    seaLevel = 0.35;
+                    
+                    biomeColors.deepOcean = "#1a237e";
+                    biomeColors.shallowOcean = "#1976d2";
+                    biomeColors.beach = "#ffd54f";
+                    biomeColors.grassland = "#388e3c";
+                    biomeColors.forest = "#2e7d32";
+                    biomeColors.mountains = "#795548";
+                    biomeColors.highMountains = "#bdbdbd";
+                    biomeColors.snowPeaks = "#f5f5f5";
+                    
+                    biomeThresholds.deepOcean = 0.15;
+                    biomeThresholds.shallowOcean = 0.35;
+                    biomeThresholds.beach = 0.4;
+                    biomeThresholds.grassland = 0.45;
+                    biomeThresholds.forest = 0.55;
+                    biomeThresholds.mountains = 0.7;
+                    biomeThresholds.highMountains = 0.8;
+                    biomeThresholds.snowPeaks = 0.9;
+                    break;
+                    
+                case 'desert':
+                    // 沙漠世界
+                    scale = 0.05;
+                    octaves = 4;
+                    persistence = 0.6;
+                    seaLevel = 0.25;
+                    
+                    biomeColors.deepOcean = "#0d47a1";
+                    biomeColors.shallowOcean = "#42a5f5";
+                    biomeColors.beach = "#ffd54f";
+                    biomeColors.grassland = "#d4ac0d";
+                    biomeColors.forest = "#b9770e";
+                    biomeColors.mountains = "#a04000";
+                    biomeColors.highMountains = "#7d6608";
+                    biomeColors.snowPeaks = "#f5f5f5";
+                    
+                    biomeThresholds.deepOcean = 0.15;
+                    biomeThresholds.shallowOcean = 0.25;
+                    biomeThresholds.beach = 0.3;
+                    biomeThresholds.grassland = 0.4;
+                    biomeThresholds.forest = 0.5;
+                    biomeThresholds.mountains = 0.65;
+                    biomeThresholds.highMountains = 0.75;
+                    biomeThresholds.snowPeaks = 0.85;
+                    break;
+                    
+                case 'ice':
+                    // 冰封星球
+                    scale = 0.03;
+                    octaves = 6;
+                    persistence = 0.4;
+                    seaLevel = 0.4;
+                    
+                    biomeColors.deepOcean = "#0d47a1";
+                    biomeColors.shallowOcean = "#81d4fa";
+                    biomeColors.beach = "#bbdefb";
+                    biomeColors.grassland = "#e3f2fd";
+                    biomeColors.forest = "#bbdefb";
+                    biomeColors.mountains = "#90a4ae";
+                    biomeColors.highMountains = "#bdbdbd";
+                    biomeColors.snowPeaks = "#ffffff";
+                    
+                    biomeThresholds.deepOcean = 0.15;
+                    biomeThresholds.shallowOcean = 0.4;
+                    biomeThresholds.beach = 0.45;
+                    biomeThresholds.grassland = 0.5;
+                    biomeThresholds.forest = 0.55;
+                    biomeThresholds.mountains = 0.6;
+                    biomeThresholds.highMountains = 0.7;
+                    biomeThresholds.snowPeaks = 0.8;
+                    break;
+            }
+            
+            // 更新UI
+            updateUI();
+            generateWorld();
+        }
+        
+        // 更新UI控件
+        function updateUI() {
+            document.getElementById('scale').value = scale;
+            document.getElementById('scaleValue').textContent = scale.toFixed(3);
+            
+            document.getElementById('octaves').value = octaves;
+            document.getElementById('octavesValue').textContent = octaves;
+            
+            document.getElementById('persistence').value = persistence;
+            document.getElementById('persistenceValue').textContent = persistence.toFixed(2);
+            
+            document.getElementById('seaLevel').value = seaLevel;
+            document.getElementById('seaLevelValue').textContent = seaLevel.toFixed(2);
+            
+            // 更新颜色选择器
+            document.getElementById('deepOceanColor').value = biomeColors.deepOcean;
+            document.getElementById('shallowOceanColor').value = biomeColors.shallowOcean;
+            document.getElementById('beachColor').value = biomeColors.beach;
+            document.getElementById('grasslandColor').value = biomeColors.grassland;
+            document.getElementById('forestColor').value = biomeColors.forest;
+            document.getElementById('mountainsColor').value = biomeColors.mountains;
+            document.getElementById('highMountainsColor').value = biomeColors.highMountains;
+            document.getElementById('snowPeaksColor').value = biomeColors.snowPeaks;
+            
+            // 更新阈值滑块
+            document.getElementById('deepOceanThreshold').value = biomeThresholds.deepOcean;
+            document.getElementById('deepOceanThresholdValue').textContent = biomeThresholds.deepOcean.toFixed(2);
+            
+            document.getElementById('shallowOceanThreshold').value = biomeThresholds.shallowOcean;
+            document.getElementById('shallowOceanThresholdValue').textContent = biomeThresholds.shallowOcean.toFixed(2);
+            
+            document.getElementById('beachThreshold').value = biomeThresholds.beach;
+            document.getElementById('beachThresholdValue').textContent = biomeThresholds.beach.toFixed(2);
+            
+            document.getElementById('grasslandThreshold').value = biomeThresholds.grassland;
+            document.getElementById('grasslandThresholdValue').textContent = biomeThresholds.grassland.toFixed(2);
+            
+            document.getElementById('forestThreshold').value = biomeThresholds.forest;
+            document.getElementById('forestThresholdValue').textContent = biomeThresholds.forest.toFixed(2);
+            
+            document.getElementById('mountainsThreshold').value = biomeThresholds.mountains;
+            document.getElementById('mountainsThresholdValue').textContent = biomeThresholds.mountains.toFixed(2);
+        }
+        
+        // 更新生物群落颜色
+        function updateBiomeColors() {
+            biomeColors.deepOcean = document.getElementById('deepOceanColor').value;
+            biomeColors.shallowOcean = document.getElementById('shallowOceanColor').value;
+            biomeColors.beach = document.getElementById('beachColor').value;
+            biomeColors.grassland = document.getElementById('grasslandColor').value;
+            biomeColors.forest = document.getElementById('forestColor').value;
+            biomeColors.mountains = document.getElementById('mountainsColor').value;
+            biomeColors.highMountains = document.getElementById('highMountainsColor').value;
+            biomeColors.snowPeaks = document.getElementById('snowPeaksColor').value;
+            
+            // 更新生物群落显示颜色
+            document.querySelector('[data-biome="deepOcean"] .biome-color').style.backgroundColor = biomeColors.deepOcean;
+            document.querySelector('[data-biome="shallowOcean"] .biome-color').style.backgroundColor = biomeColors.shallowOcean;
+            document.querySelector('[data-biome="beach"] .biome-color').style.backgroundColor = biomeColors.beach;
+            document.querySelector('[data-biome="grassland"] .biome-color').style.backgroundColor = biomeColors.grassland;
+            document.querySelector('[data-biome="forest"] .biome-color').style.backgroundColor = biomeColors.forest;
+            document.querySelector('[data-biome="mountains"] .biome-color').style.backgroundColor = biomeColors.mountains;
+            document.querySelector('[data-biome="highMountains"] .biome-color').style.backgroundColor = biomeColors.highMountains;
+            document.querySelector('[data-biome="snowPeaks"] .biome-color').style.backgroundColor = biomeColors.snowPeaks;
+        }
+        
+        // 柏林噪声函数
+        class PerlinNoise {
+            constructor(seed) {
+                this.seed = seed;
+                this.permutation = new Array(512);
+                this.init();
+            }
+            
+            init() {
+                const rand = new Array(256);
+                for (let i = 0; i < 256; i++) {
+                    rand[i] = Math.random();
+                }
+                
+                // 创建一个0-255的数组并打乱顺序
+                let p = new Array(256);
+                for (let i = 0; i < 256; i++) {
+                    p[i] = i;
+                }
+                
+                // 使用Fisher-Yates洗牌算法
+                for (let i = 255; i > 0; i--) {
+                    const j = Math.floor(this.rand(i) * (i + 1));
+                    [p[i], p[j]] = [p[j], p[i]];
+                }
+                
+                // 复制到512长度数组
+                for (let i = 0; i < 512; i++) {
+                    this.permutation[i] = p[i & 255];
+                }
+            }
+            
+            rand(n) {
+                // 基于种子生成伪随机数
+                const x = Math.sin(n * 12.9898 + this.seed * 78.233) * 43758.5453;
+                return x - Math.floor(x);
+            }
+            
+            fade(t) {
+                return t * t * t * (t * (t * 6 - 15) + 10);
+            }
+            
+            lerp(a, b, t) {
+                return a + t * (b - a);
+            }
+            
+            grad(hash, x, y) {
+                // 将哈希的前4位用于计算梯度方向
+                const h = hash & 15;
+                const u = h < 8 ? x : y;
+                const v = h < 4 ? y : h === 12 || h === 14 ? x : 0;
+                return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+            }
+            
+            noise(x, y) {
+                // 找到单位立方体包含的点
+                const X = Math.floor(x) & 255;
+                const Y = Math.floor(y) & 255;
+                
+                // 查找单元立方体中的相对位置
+                x -= Math.floor(x);
+                y -= Math.floor(y);
+                
+                // 计算褪色曲线
+                const u = this.fade(x);
+                const v = this.fade(y);
+                
+                // 哈希立方体角的坐标
+                const a = this.permutation[X] + Y;
+                const aa = this.permutation[a];
+                const ab = this.permutation[a + 1];
+                const b = this.permutation[X + 1] + Y;
+                const ba = this.permutation[b];
+                const bb = this.permutation[b + 1];
+                
+                // 添加混合结果
+                return this.lerp(
+                    this.lerp(this.grad(aa, x, y), 
+                    this.grad(ba, x - 1, y), u),
+                    this.lerp(this.grad(ab, x, y - 1), 
+                    this.grad(bb, x - 1, y - 1), u),
+                    v
+                );
+            }
+        }
+        
+        // 生成分形噪声
+        function fractalNoise(x, y, noiseGen) {
+            let total = 0;
+            let frequency = 1;
+            let amplitude = 1;
+            let maxValue = 0;
+            
+            for (let i = 0; i < octaves; i++) {
+                total += noiseGen.noise(x * frequency, y * frequency) * amplitude;
+                maxValue += amplitude;
+                amplitude *= persistence;
+                frequency *= 2;
+            }
+            
+            return total / maxValue;
+        }
+        
+        // 生成世界
+        function generateWorld() {
+            const startTime = performance.now();
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+            
+            const noiseGen = new PerlinNoise(worldSeed);
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    // 应用偏移和缩放
+                    const nx = (x + offsetX) / zoom * scale;
+                    const ny = (y + offsetY) / zoom * scale;
+                    
+                    // 计算噪声值（-1到1之间）
+                    let value = fractalNoise(nx, ny, noiseGen);
+                    
+                    // 将值归一化到0-1范围
+                    value = (value + 1) / 2;
+                    
+                    // 根据高度确定颜色
+                    let r, g, b;
+                    let color;
+                    
+                    // 深海
+                    if (value < biomeThresholds.deepOcean) {
+                        color = biomeColors.deepOcean;
+                    }
+                    // 浅海
+                    else if (value < biomeThresholds.shallowOcean) {
+                        color = biomeColors.shallowOcean;
+                    }
+                    // 沙滩
+                    else if (value < biomeThresholds.beach) {
+                        color = biomeColors.beach;
+                    }
+                    // 草原
+                    else if (value < biomeThresholds.grassland) {
+                        color = biomeColors.grassland;
+                    }
+                    // 森林
+                    else if (value < biomeThresholds.forest) {
+                        color = biomeColors.forest;
+                    }
+                    // 山地
+                    else if (value < biomeThresholds.mountains) {
+                        color = biomeColors.mountains;
+                    }
+                    // 高山
+                    else if (value < biomeThresholds.highMountains) {
+                        color = biomeColors.highMountains;
+                    }
+                    // 雪峰
+                    else {
+                        color = biomeColors.snowPeaks;
+                    }
+                    
+                    // 将十六进制颜色转换为RGB
+                    const hex = color.replace('#', '');
+                    r = parseInt(hex.substring(0, 2), 16);
+                    g = parseInt(hex.substring(2, 4), 16);
+                    b = parseInt(hex.substring(4, 6), 16);
+                    
+                    // 添加一些细节变化
+                    const detail = noiseGen.noise(x * 0.1, y * 0.1) * 0.1;
+                    r = Math.min(255, Math.max(0, r + detail * 50));
+                    g = Math.min(255, Math.max(0, g + detail * 50));
+                    b = Math.min(255, Math.max(0, b + detail * 50));
+                    
+                    // 设置像素颜色
+                    const idx = (y * width + x) * 4;
+                    data[idx] = r;       // R
+                    data[idx + 1] = g;   // G
+                    data[idx + 2] = b;   // B
+                    data[idx + 3] = 255; // Alpha
+                }
+            }
+            
+            // 将图像数据绘制到画布上
+            ctx.putImageData(imageData, 0, 0);
+            
+            // 更新统计信息
+            const generationTime = performance.now() - startTime;
+            document.getElementById('generationTime').textContent = `${generationTime.toFixed(1)}ms`;
+            document.getElementById('worldSize').textContent = `${(width * height / 1000).toFixed(0)}k`;
+        }
+        
+        // 动画地形
+        function animateWorld() {
+            if (!isAnimating) return;
+            
+            const time = (Date.now() - animationStart) / 1000;
+            offsetX = Math.sin(time * 0.2) * 100;
+            offsetY = Math.cos(time * 0.15) * 80;
+            
+            generateWorld();
+            
+            requestAnimationFrame(animateWorld);
+        }
+    </script>
+</body>
+</html>
