@@ -1,11 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FNF Healthbar 贴图设置器</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>FNF 自动谱面生成器</title>
     <style>
+        :root {
+            --primary: #ff77a8;
+            --secondary: #b967ff;
+            --dark: #2a0a4a;
+            --light: #f0e6ff;
+            --accent: #4dffea;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -14,11 +21,10 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            color: #e0e0ff;
+            background: linear-gradient(135deg, var(--dark), #1a0635);
+            color: var(--light);
             min-height: 100vh;
             padding: 20px;
-            overflow-x: hidden;
         }
         
         .container {
@@ -30,17 +36,19 @@
             text-align: center;
             padding: 30px 0;
             margin-bottom: 30px;
-            border-bottom: 1px solid rgba(100, 150, 255, 0.3);
-            position: relative;
+            background: rgba(42, 10, 74, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--primary);
         }
         
         h1 {
-            font-size: 3.2rem;
+            font-size: 3.5rem;
             margin-bottom: 15px;
-            background: linear-gradient(to right, #ff5e62, #ff9966);
+            background: linear-gradient(90deg, var(--primary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 15px rgba(255, 94, 98, 0.3);
+            text-shadow: 0 0 15px rgba(255, 119, 168, 0.4);
         }
         
         .subtitle {
@@ -51,521 +59,735 @@
             line-height: 1.6;
         }
         
-        .content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .editor {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(20, 25, 60, 0.7);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(100, 150, 255, 0.2);
-        }
-        
-        .preview {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(20, 25, 60, 0.7);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(100, 150, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        h2 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: #ff9966;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        h2 i {
-            font-size: 1.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 1rem;
-            opacity: 0.9;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        select, input {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 8px;
-            background: rgba(30, 35, 70, 0.7);
-            border: 1px solid rgba(100, 150, 255, 0.3);
-            color: white;
-            font-size: 1rem;
-            outline: none;
-        }
-        
-        select:focus, input:focus {
-            border-color: #ff9966;
-        }
-        
-        .color-picker {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        
-        .color-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .color-option:hover, .color-option.active {
-            transform: scale(1.1);
-            border-color: white;
-        }
-        
-        .preview-container {
-            width: 100%;
-            height: 180px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            position: relative;
-            margin: 20px 0;
-            overflow: hidden;
-            border: 1px solid rgba(255, 153, 102, 0.3);
-        }
-        
-        .health-bar {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 30px;
-            background: rgba(50, 50, 70, 0.8);
-            border-radius: 15px;
-            overflow: hidden;
-        }
-        
-        .health-fill {
-            height: 100%;
-            width: 50%;
-            background: linear-gradient(to right, #ff5e62, #ff9966);
-            border-radius: 15px;
-            transition: width 0.5s ease;
-        }
-        
-        .health-icons {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
-            z-index: 2;
-        }
-        
-        .icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.6);
-            font-size: 1.5rem;
-        }
-        
-        .icon-bf {
-            color: #5dade2;
-        }
-        
-        .icon-opponent {
-            color: #ec7063;
-        }
-        
-        .slider-container {
-            margin-top: 15px;
-            width: 100%;
-        }
-        
-        .slider-container label {
-            display: block;
-            margin-bottom: 10px;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 8px;
-            -webkit-appearance: none;
-            background: rgba(100, 150, 255, 0.2);
-            border-radius: 4px;
-            outline: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #ff9966;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(255, 153, 102, 0.5);
-        }
-        
-        .buttons {
+        .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 30px;
+            margin-bottom: 40px;
         }
         
-        button {
-            background: linear-gradient(to right, #ff5e62, #ff9966);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 94, 98, 0.3);
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: rgba(42, 10, 74, 0.6);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--secondary);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--accent);
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
         }
         
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 94, 98, 0.5);
+        .panel-title i {
+            font-size: 1.5rem;
         }
         
-        button:active {
-            transform: translateY(1px);
-        }
-        
-        .code-container {
-            background: rgba(20, 25, 60, 0.7);
+        .upload-area {
+            border: 3px dashed var(--primary);
             border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 30, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(100, 150, 255, 0.2);
-            margin-top: 30px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(185, 103, 255, 0.1);
         }
         
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .upload-area:hover {
+            background: rgba(185, 103, 255, 0.2);
+            border-color: var(--accent);
+        }
+        
+        .upload-area i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+        
+        .upload-text {
+            font-size: 1.2rem;
             margin-bottom: 15px;
         }
         
-        .code-block {
-            background: #0a0e2a;
+        .file-info {
+            background: rgba(77, 255, 234, 0.1);
+            padding: 15px;
             border-radius: 10px;
-            padding: 20px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.95rem;
-            overflow-x: auto;
-            line-height: 1.6;
-            max-height: 300px;
-            overflow-y: auto;
+            margin: 15px 0;
+            display: none;
         }
         
-        .lua-keyword {
-            color: #ff9966;
+        .controls {
+            margin: 25px 0;
         }
         
-        .lua-string {
-            color: #5dade2;
+        .control-group {
+            margin-bottom: 20px;
         }
         
-        .lua-comment {
-            color: #7f8c8d;
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--accent);
         }
         
-        .lua-function {
-            color: #f1c40f;
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
-        .lua-table {
-            color: #9b59b6;
+        .slider {
+            flex: 1;
+            height: 10px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(77, 255, 234, 0.8);
+        }
+        
+        .slider-value {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 10px 0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(185, 103, 255, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #visualization {
+            width: 100%;
+            height: 400px;
+            background: rgba(10, 5, 20, 0.7);
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid var(--accent);
+            overflow: hidden;
+        }
+        
+        .note {
+            position: absolute;
+            width: 50px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 5px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .progress-container {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .result-area {
+            display: none;
+            margin-top: 25px;
+            text-align: center;
+        }
+        
+        .download-btn {
+            background: linear-gradient(90deg, var(--accent), #00ccb1);
+            display: inline-block;
+            padding: 12px 35px;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            text-decoration: none;
+            border-radius: 50px;
+            color: var(--dark);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(77, 255, 234, 0.4);
         }
         
         footer {
             text-align: center;
             padding: 30px 0;
-            margin-top: 30px;
-            border-top: 1px solid rgba(100, 150, 255, 0.3);
             font-size: 0.9rem;
             opacity: 0.7;
+            margin-top: 30px;
         }
         
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-            }
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>FNF Healthbar 贴图设置器</h1>
-            <p class="subtitle">使用 Lua 脚本为每个曲目单独设置自定义 healthbar 贴图 - 适用于 FNF 最新版本</p>
+            <h1>FNF 自动谱面生成器</h1>
+            <p class="subtitle">上传你的音乐文件，自动生成Friday Night Funkin'风格的节奏游戏谱面！支持自定义难度、音符密度和轨道分布。</p>
         </header>
         
-        <div class="content">
-            <div class="editor">
-                <h2><i class="fas fa-sliders-h"></i> 贴图设置</h2>
+        <div class="main-content">
+            <div class="panel">
+                <h2 class="panel-title"><i>🎵</i> 音频设置</h2>
                 
-                <div class="form-group">
-                    <label for="songSelect"><i class="fas fa-music"></i> 选择曲目</label>
-                    <select id="songSelect">
-                        <option value="tutorial">Tutorial</option>
-                        <option value="bopeebo">Bopeebo</option>
-                        <option value="fresh">Fresh</option>
-                        <option value="dadbattle">Dad Battle</option>
-                        <option value="spookeez">Spookeez</option>
-                        <option value="south">South</option>
-                        <option value="monster">Monster</option>
-                        <option value="pico">Pico</option>
-                        <option value="philly">Philly Nice</option>
-                        <option value="blammed">Blammed</option>
-                    </select>
+                <div class="upload-area" id="uploadArea">
+                    <i>📁</i>
+                    <p class="upload-text">点击或拖放音频文件到此处</p>
+                    <p>支持格式: MP3, WAV, OGG</p>
+                    <input type="file" id="audioFile" accept="audio/*" style="display: none;">
                 </div>
                 
-                <div class="form-group">
-                    <label for="textureName"><i class="fas fa-image"></i> 贴图名称</label>
-                    <input type="text" id="textureName" placeholder="例如: healthBar_custom" value="healthBar_custom">
+                <div class="file-info" id="fileInfo">
+                    <p><strong>已选择文件:</strong> <span id="fileName">未选择文件</span></p>
+                    <p><strong>文件大小:</strong> <span id="fileSize">-</span></p>
+                    <p><strong>时长:</strong> <span id="fileDuration">-</span></p>
                 </div>
                 
-                <div class="form-group">
-                    <label><i class="fas fa-palette"></i> 健康条颜色</label>
-                    <div class="color-picker">
-                        <div class="color-option active" style="background: linear-gradient(to right, #ff5e62, #ff9966);" data-color="default"></div>
-                        <div class="color-option" style="background: linear-gradient(to right, #5dade2, #3498db);" data-color="blue"></div>
-                        <div class="color-option" style="background: linear-gradient(to right, #2ecc71, #27ae60);" data-color="green"></div>
-                        <div class="color-option" style="background: linear-gradient(to right, #9b59b6, #8e44ad);" data-color="purple"></div>
-                        <div class="color-option" style="background: linear-gradient(to right, #e74c3c, #c0392b);" data-color="red"></div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label><i class="fas fa-icons"></i> 图标设置</label>
-                    <div style="display: flex; gap: 15px; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <label for="bfIcon"><i class="fas fa-user"></i> Boyfriend 图标</label>
-                            <select id="bfIcon">
-                                <option value="face">BF 头像</option>
-                                <option value="pixel">像素风格</option>
-                                <option value="ghost">幽灵</option>
-                                <option value="skull">骷髅</option>
-                            </select>
+                <div class="controls">
+                    <div class="control-group">
+                        <label class="control-label">难度级别</label>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="5" value="3" class="slider" id="difficulty">
+                            <span class="slider-value" id="difficultyValue">3</span>
                         </div>
-                        <div style="flex: 1;">
-                            <label for="opponentIcon"><i class="fas fa-user-ninja"></i> 对手图标</label>
-                            <select id="opponentIcon">
-                                <option value="face">对手头像</option>
-                                <option value="pixel">像素风格</option>
-                                <option value="demon">恶魔</option>
-                                <option value="robot">机器人</option>
-                            </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">音符密度</label>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="100" value="60" class="slider" id="density">
+                            <span class="slider-value" id="densityValue">60%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">BPM 偏移</label>
+                        <div class="slider-container">
+                            <input type="range" min="-20" max="20" value="0" class="slider" id="bpmOffset">
+                            <span class="slider-value" id="bpmOffsetValue">0</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="slider-container">
-                    <label for="healthValue"><i class="fas fa-heart"></i> 当前生命值: <span id="healthValue">50%</span></label>
-                    <input type="range" id="healthSlider" min="0" max="100" value="50">
+                <button class="btn" id="analyzeBtn" disabled>分析音频</button>
+                <button class="btn" id="generateBtn" disabled>生成谱面</button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
                 </div>
                 
-                <div class="buttons">
-                    <button id="applyBtn"><i class="fas fa-check"></i> 应用设置</button>
-                    <button id="resetBtn"><i class="fas fa-redo"></i> 重置</button>
+                <div class="loader" id="loader">
+                    <div class="spinner"></div>
+                    <p>正在分析音频并生成谱面...</p>
+                </div>
+                
+                <div class="result-area" id="resultArea">
+                    <h3>谱面生成成功！</h3>
+                    <p>你的FNF谱面已准备就绪，点击下方按钮下载</p>
+                    <a href="#" class="download-btn" id="downloadBtn">下载谱面文件 (.json)</a>
                 </div>
             </div>
             
-            <div class="preview">
-                <h2><i class="fas fa-eye"></i> 效果预览</h2>
-                <div class="preview-container">
-                    <div class="health-bar">
-                        <div class="health-fill" id="healthFill"></div>
-                        <div class="health-icons">
-                            <div class="icon icon-bf">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="icon icon-opponent">
-                                <i class="fas fa-user-ninja"></i>
-                            </div>
-                        </div>
-                    </div>
+            <div class="panel">
+                <h2 class="panel-title"><i>🎮</i> 谱面预览</h2>
+                <p>生成后的谱面将显示在这里：</p>
+                <div id="visualization"></div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn" id="playBtn" disabled>播放预览</button>
+                    <button class="btn" id="stopBtn" disabled>停止预览</button>
                 </div>
-                <div class="info">
-                    <p><i class="fas fa-info-circle"></i> 此预览展示自定义 healthbar 在游戏中的效果</p>
-                    <p><i class="fas fa-exclamation-triangle"></i> 确保贴图文件已放入 <code>images/healthBar/</code> 目录</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="code-container">
-            <div class="code-header">
-                <h2><i class="fas fa-code"></i> Lua 脚本</h2>
-                <button id="copyBtn"><i class="fas fa-copy"></i> 复制代码</button>
-            </div>
-            <div class="code-block" id="luaCode">
-<span class="lua-function">function</span> <span class="lua-keyword">onCreate</span>()
-    <span class="lua-comment">-- 创建自定义 healthbar</span>
-    <span class="lua-function">makeLuaSprite</span>(<span class="lua-string">'healthBarBG'</span>, <span class="lua-string">'healthBar/healthBarBG'</span>, <span class="lua-number">0</span>, <span class="lua-number">0</span>)
-    <span class="lua-function">setObjectCamera</span>(<span class="lua-string">'healthBarBG'</span>, <span class="lua-string">'hud'</span>)
-    <span class="lua-function">addLuaSprite</span>(<span class="lua-string">'healthBarBG'</span>, <span class="lua-keyword">false</span>)
-
-    <span class="lua-comment">-- 使用自定义贴图</span>
-    <span class="lua-function">makeLuaSprite</span>(<span class="lua-string">'healthBar'</span>, <span class="lua-string">'healthBar/<span id="codeTexture">healthBar_custom</span>'</span>, <span class="lua-number">0</span>, <span class="lua-number">0</span>)
-    <span class="lua-function">setObjectCamera</span>(<span class="lua-string">'healthBar'</span>, <span class="lua-string">'hud'</span>)
-    <span class="lua-function">addLuaSprite</span>(<span class="lua-string">'healthBar'</span>, <span class="lua-keyword">true</span>)
-    
-    <span class="lua-comment">-- 设置图标位置</span>
-    <span class="lua-function">setProperty</span>(<span class="lua-string">'iconP1.visible'</span>, <span class="lua-keyword">false</span>)
-    <span class="lua-function">setProperty</span>(<span class="lua-string">'iconP2.visible'</span>, <span class="lua-keyword">false</span>)
-    
-    <span class="lua-comment">-- 创建自定义图标</span>
-    <span class="lua-function">makeLuaSprite</span>(<span class="lua-string">'iconBF'</span>, <span class="lua-string">'icons/icon-bf'</span>, <span class="lua-function">getProperty</span>(<span class="lua-string">'iconP1.x'</span>), <span class="lua-function">getProperty</span>(<span class="lua-string">'iconP1.y'</span>))
-    <span class="lua-function">setObjectCamera</span>(<span class="lua-string">'iconBF'</span>, <span class="lua-string">'hud'</span>)
-    <span class="lua-function">addLuaSprite</span>(<span class="lua-string">'iconBF'</span>, <span class="lua-keyword">true</span>)
-    
-    <span class="lua-function">makeLuaSprite</span>(<span class="lua-string">'iconOpponent'</span>, <span class="lua-string">'icons/icon-opponent'</span>, <span class="lua-function">getProperty</span>(<span class="lua-string">'iconP2.x'</span>), <span class="lua-function">getProperty</span>(<span class="lua-string">'iconP2.y'</span>))
-    <span class="lua-function">setObjectCamera</span>(<span class="lua-string">'iconOpponent'</span>, <span class="lua-string">'hud'</span>)
-    <span class="lua-function">addLuaSprite</span>(<span class="lua-string">'iconOpponent'</span>, <span class="lua-keyword">true</span>)
-<span class="lua-function">end</span>
-
-<span class="lua-function">function</span> <span class="lua-keyword">onUpdate</span>()
-    <span class="lua-comment">-- 更新 healthbar 位置</span>
-    <span class="lua-function">setProperty</span>(<span class="lua-string">'healthBar.x'</span>, <span class="lua-function">getProperty</span>(<span class="lua-string">'healthBarBG.x'</span>))
-    <span class="lua-function">setProperty</span>(<span class="lua-string">'healthBar.y'</span>, <span class="lua-function">getProperty</span>(<span class="lua-string">'healthBarBG.y'</span>))
-    
-    <span class="lua-comment">-- 设置 healthbar 缩放</span>
-    <span class="lua-function">setProperty</span>(<span class="lua-string">'healthBar.scale.x'</span>, <span class="lua-function">getProperty</span>(<span class="lua-string">'health'</span>) * <span class="lua-number">0.5</span>)
-<span class="lua-function">end</span>
             </div>
         </div>
         
         <footer>
-            <p>FNF Healthbar 贴图设置器 | 使用 HTML、CSS 和 JavaScript 实现</p>
-            <p>© 2023 Friday Night Funkin' 模组开发工具 | 本工具仅用于学习目的</p>
+            <p>© 2023 FNF 自动谱面生成器 | 本工具使用Web Audio API在浏览器中处理音频，无需上传到服务器</p>
+            <p>提示：对于最佳结果，请使用节奏清晰的音乐文件</p>
         </footer>
     </div>
     
     <script>
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 设置滑块事件
-            const healthSlider = document.getElementById('healthSlider');
-            const healthValue = document.getElementById('healthValue');
-            const healthFill = document.getElementById('healthFill');
-            
-            healthSlider.addEventListener('input', function() {
-                const value = this.value;
-                healthValue.textContent = `${value}%`;
-                healthFill.style.width = `${value}%`;
-            });
-            
-            // 颜色选择器事件
-            const colorOptions = document.querySelectorAll('.color-option');
-            colorOptions.forEach(option => {
-                option.addEventListener('click', function() {
-                    colorOptions.forEach(opt => opt.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // 更新预览
-                    const bgColor = window.getComputedStyle(this).backgroundImage;
-                    healthFill.style.background = bgColor;
-                    
-                    // 更新代码预览
-                    updateLuaCode();
-                });
-            });
-            
-            // 应用按钮事件
-            document.getElementById('applyBtn').addEventListener('click', function() {
-                updateLuaCode();
-                alert('设置已应用！请复制下方Lua代码到你的曲目脚本文件');
-            });
-            
-            // 重置按钮事件
-            document.getElementById('resetBtn').addEventListener('click', function() {
-                document.getElementById('textureName').value = 'healthBar_custom';
-                document.getElementById('bfIcon').value = 'face';
-                document.getElementById('opponentIcon').value = 'face';
-                healthSlider.value = 50;
-                healthValue.textContent = '50%';
-                healthFill.style.width = '50%';
-                
-                // 重置颜色选择
-                colorOptions.forEach(opt => opt.classList.remove('active'));
-                document.querySelector('[data-color="default"]').classList.add('active');
-                healthFill.style.background = 'linear-gradient(to right, #ff5e62, #ff9966)';
-                
-                updateLuaCode();
-            });
-            
-            // 复制按钮事件
-            document.getElementById('copyBtn').addEventListener('click', function() {
-                const code = document.getElementById('luaCode').textContent;
-                navigator.clipboard.writeText(code).then(() => {
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                    }, 2000);
-                });
-            });
-            
-            // 表单更改事件
-            document.getElementById('songSelect').addEventListener('change', updateLuaCode);
-            document.getElementById('textureName').addEventListener('input', updateLuaCode);
-            document.getElementById('bfIcon').addEventListener('change', updateLuaCode);
-            document.getElementById('opponentIcon').addEventListener('change', updateLuaCode);
-            
-            // 初始化代码
-            updateLuaCode();
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const audioFileInput = document.getElementById('audioFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileDuration = document.getElementById('fileDuration');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const visualization = document.getElementById('visualization');
+        const progressBar = document.getElementById('progressBar');
+        const loader = document.getElementById('loader');
+        const resultArea = document.getElementById('resultArea');
+        
+        // 滑块和数值显示
+        const difficultySlider = document.getElementById('difficulty');
+        const difficultyValue = document.getElementById('difficultyValue');
+        const densitySlider = document.getElementById('density');
+        const densityValue = document.getElementById('densityValue');
+        const bpmOffsetSlider = document.getElementById('bpmOffset');
+        const bpmOffsetValue = document.getElementById('bpmOffsetValue');
+        
+        // 音频相关变量
+        let audioContext;
+        let audioBuffer;
+        let audioElement;
+        let audioSource;
+        let isPlaying = false;
+        let bpm = 120;
+        let generatedChart = null;
+        
+        // 初始化滑块事件
+        difficultySlider.addEventListener('input', () => {
+            difficultyValue.textContent = difficultySlider.value;
         });
         
-        // 更新Lua代码预览
-        function updateLuaCode() {
-            const textureName = document.getElementById('textureName').value;
-            const song = document.getElementById('songSelect').value;
-            const bfIcon = document.getElementById('bfIcon').value;
-            const opponentIcon = document.getElementById('opponentIcon').value;
+        densitySlider.addEventListener('input', () => {
+            densityValue.textContent = densitySlider.value + '%';
+        });
+        
+        bpmOffsetSlider.addEventListener('input', () => {
+            bpmOffsetValue.textContent = bpmOffsetSlider.value;
+        });
+        
+        // 文件上传处理
+        uploadArea.addEventListener('click', () => {
+            audioFileInput.click();
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#4dffea';
+            uploadArea.style.backgroundColor = 'rgba(185, 103, 255, 0.3)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#ff77a8';
+            uploadArea.style.backgroundColor = 'rgba(185, 103, 255, 0.1)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ff77a8';
+            uploadArea.style.backgroundColor = 'rgba(185, 103, 255, 0.1)';
             
-            document.getElementById('codeTexture').textContent = textureName;
+            if (e.dataTransfer.files.length) {
+                handleAudioFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        audioFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleAudioFile(e.target.files[0]);
+            }
+        });
+        
+        function handleAudioFile(file) {
+            // 检查文件类型
+            if (!file.type.match('audio.*')) {
+                alert('请上传音频文件 (MP3, WAV, OGG)');
+                return;
+            }
             
-            // 在真实应用中，这里会生成完整的Lua代码
-            // 这里只做简单的替换演示
+            // 更新文件信息
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+            
+            // 创建临时URL播放以获取时长
+            const url = URL.createObjectURL(file);
+            audioElement = new Audio(url);
+            
+            audioElement.addEventListener('loadedmetadata', () => {
+                fileDuration.textContent = formatDuration(audioElement.duration);
+                
+                // 读取文件为ArrayBuffer
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    
+                    // 初始化音频上下文
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    
+                    // 解码音频数据
+                    audioContext.decodeAudioData(arrayBuffer)
+                        .then(buffer => {
+                            audioBuffer = buffer;
+                            analyzeBtn.disabled = false;
+                        })
+                        .catch(err => {
+                            console.error('解码音频失败:', err);
+                            alert('音频解码失败，请尝试其他文件');
+                        });
+                };
+                
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        // 分析音频按钮
+        analyzeBtn.addEventListener('click', () => {
+            if (!audioBuffer) {
+                alert('请先上传音频文件');
+                return;
+            }
+            
+            loader.style.display = 'block';
+            analyzeBtn.disabled = true;
+            
+            // 模拟分析过程（实际应用中这里会是实际的音频分析）
+            setTimeout(() => {
+                bpm = 120 + parseInt(bpmOffsetSlider.value);
+                
+                loader.style.display = 'none';
+                generateBtn.disabled = false;
+                analyzeBtn.textContent = '重新分析音频';
+                analyzeBtn.disabled = false;
+                
+                alert(`音频分析完成！\n检测到BPM: ${bpm}\n开始生成谱面吧！`);
+            }, 2000);
+        });
+        
+        // 生成谱面按钮
+        generateBtn.addEventListener('click', () => {
+            if (!audioBuffer) {
+                alert('请先上传并分析音频文件');
+                return;
+            }
+            
+            loader.style.display = 'block';
+            generateBtn.disabled = true;
+            
+            // 模拟生成过程
+            setTimeout(() => {
+                // 生成虚拟谱面数据
+                generatedChart = generateFakeChart(audioBuffer.duration, bpm);
+                
+                // 可视化谱面
+                visualizeChart(generatedChart);
+                
+                loader.style.display = 'none';
+                resultArea.style.display = 'block';
+                playBtn.disabled = false;
+                
+                // 创建下载链接
+                const jsonData = JSON.stringify(generatedChart, null, 2);
+                const blob = new Blob([jsonData], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                downloadBtn.href = url;
+                downloadBtn.download = 'fnf_chart_' + Date.now() + '.json';
+            }, 3000);
+        });
+        
+        // 播放预览按钮
+        playBtn.addEventListener('click', () => {
+            if (!audioBuffer || !generatedChart) return;
+            
+            if (!isPlaying) {
+                isPlaying = true;
+                playBtn.textContent = '暂停预览';
+                stopBtn.disabled = false;
+                
+                // 创建音频源
+                if (audioSource) {
+                    audioSource.stop();
+                }
+                
+                audioSource = audioContext.createBufferSource();
+                audioSource.buffer = audioBuffer;
+                audioSource.connect(audioContext.destination);
+                
+                // 开始播放
+                const startTime = audioContext.currentTime;
+                audioSource.start();
+                
+                // 开始谱面可视化
+                animateVisualization(generatedChart, startTime);
+                
+                // 音频播放结束处理
+                audioSource.onended = () => {
+                    isPlaying = false;
+                    playBtn.textContent = '播放预览';
+                    stopBtn.disabled = true;
+                };
+            } else {
+                // 暂停逻辑
+                isPlaying = false;
+                playBtn.textContent = '继续预览';
+                audioSource.stop();
+            }
+        });
+        
+        // 停止预览按钮
+        stopBtn.addEventListener('click', () => {
+            if (audioSource) {
+                audioSource.stop();
+            }
+            isPlaying = false;
+            playBtn.textContent = '播放预览';
+            stopBtn.disabled = true;
+            visualization.innerHTML = '';
+        });
+        
+        // 辅助函数
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+        }
+        
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        function generateFakeChart(duration, bpm) {
+            // 生成虚拟的FNF谱面数据
+            const chart = {
+                song: {
+                    song: "Generated Track",
+                    notes: [],
+                    bpm: bpm,
+                    speed: 2.5 - (difficultySlider.value * 0.3),
+                    sections: Math.floor(duration / (60 / bpm * 4)),
+                    needsVoices: true,
+                    player1: "bf",
+                    player2: "dad",
+                    gfVersion: "gf",
+                    noteStyle: "normal",
+                    stage: "stage",
+                    validScore: true
+                }
+            };
+            
+            // 根据难度和密度生成音符
+            const noteCount = Math.floor(duration * (densitySlider.value / 20));
+            const lanes = [0, 1, 2, 3]; // 4个轨道
+            
+            for (let i = 0; i < noteCount; i++) {
+                const time = Math.random() * duration;
+                const lane = lanes[Math.floor(Math.random() * lanes.length)];
+                const type = Math.random() > 0.8 ? 1 : 0; // 0=单按, 1=长按
+                
+                chart.song.notes.push({
+                    time: time * 1000, // 转为毫秒
+                    lane: lane,
+                    type: type,
+                    length: type === 1 ? (Math.random() * 500 + 200) : 0
+                });
+            }
+            
+            // 按时间排序
+            chart.song.notes.sort((a, b) => a.time - b.time);
+            
+            return chart;
+        }
+        
+        function visualizeChart(chart) {
+            visualization.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.width = visualization.clientWidth;
+            canvas.height = visualization.clientHeight;
+            visualization.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 绘制轨道
+            const laneWidth = width / 4;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 2;
+            
+            for (let i = 1; i < 4; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * laneWidth, 0);
+                ctx.lineTo(i * laneWidth, height);
+                ctx.stroke();
+            }
+            
+            // 绘制音符
+            const colors = ['#ff77a8', '#4dffea', '#b967ff', '#ffcc66'];
+            
+            chart.song.notes.forEach(note => {
+                const lane = note.lane;
+                const x = lane * laneWidth + 10;
+                const y = height - (note.time / (chart.song.bpm * 1000) * 100) % height;
+                
+                ctx.fillStyle = colors[lane];
+                ctx.beginPath();
+                
+                if (note.type === 0) {
+                    // 单按
+                    ctx.arc(x + laneWidth/2, y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 长按
+                    const noteHeight = note.length / 20;
+                    ctx.fillRect(x, y, laneWidth - 20, noteHeight);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        function animateVisualization(chart, startTime) {
+            visualization.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.width = visualization.clientWidth;
+            canvas.height = visualization.clientHeight;
+            visualization.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 绘制轨道
+            const laneWidth = width / 4;
+            const colors = ['#ff77a8', '#4dffea', '#b967ff', '#ffcc66'];
+            
+            function draw() {
+                if (!isPlaying) return;
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // 绘制轨道分隔线
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.lineWidth = 2;
+                
+                for (let i = 1; i < 4; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * laneWidth, 0);
+                    ctx.lineTo(i * laneWidth, height);
+                    ctx.stroke();
+                }
+                
+                // 计算当前播放时间
+                const currentTime = (audioContext.currentTime - startTime) * 1000;
+                
+                // 绘制音符
+                chart.song.notes.forEach(note => {
+                    const lane = note.lane;
+                    const noteTime = note.time;
+                    const timeDiff = noteTime - currentTime;
+                    
+                    // 只显示即将到来的音符
+                    if (timeDiff > -1000 && timeDiff < 3000) {
+                        const x = lane * laneWidth + 10;
+                        const y = height - (timeDiff / 5);
+                        
+                        if (y > -50 && y < height + 50) {
+                            ctx.fillStyle = colors[lane];
+                            ctx.beginPath();
+                            
+                            if (note.type === 0) {
+                                // 单按
+                                ctx.arc(x + laneWidth/2, y, 15, 0, Math.PI * 2);
+                                ctx.fill();
+                            } else {
+                                // 长按
+                                const noteHeight = note.length / 20;
+                                ctx.fillRect(x, y, laneWidth - 20, noteHeight);
+                                ctx.fill();
+                            }
+                        }
+                    }
+                });
+                
+                // 绘制判定线
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, height - 20);
+                ctx.lineTo(width, height - 20);
+                ctx.stroke();
+                
+                requestAnimationFrame(draw);
+            }
+            
+            draw();
         }
     </script>
 </body>
